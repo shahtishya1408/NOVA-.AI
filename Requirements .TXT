@@ -1,0 +1,26 @@
+# Core dependencies for NOVA Code Analyzer
+
+# Speech Recognition
+SpeechRecognition>=3.10.0
+PyAudio>=0.2.13
+
+# Text-to-Speech
+gTTS>=2.3.0
+pyttsx3>=2.90
+
+# Audio Processing
+pydub>=0.25.1
+
+# Translation
+googletrans==4.0.0rc1
+
+# Utilities
+pywhatkit>=5.4
+pyjokes>=0.6.0
+
+# Optional (included with Python)
+# ast (built-in)
+# os (built-in)
+# sys (built-in)
+# datetime (built-in)
+# pathlib (built-in)
