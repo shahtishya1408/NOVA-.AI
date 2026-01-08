@@ -1,0 +1,1502 @@
+# 🎙️ NOVA AI - Voice Commands Documentation
+
+Complete guide to all 30+ voice commands available in NOVA AI.
+
+---
+
+## Table of Contents
+
+1. [Greeting & Politeness Commands](#greeting--politeness-commands)
+2. [Time & Date Commands](#time--date-commands)
+3. [Information & Search Commands](#information--search-commands)
+4. [Weather Commands](#weather-commands)
+5. [Entertainment Commands](#entertainment-commands)
+6. [System Information Commands](#system-information-commands)
+7. [Media Control Commands](#media-control-commands)
+8. [Volume & Audio Commands](#volume--audio-commands)
+9. [System Control Commands](#system-control-commands)
+10. [Productivity Commands](#productivity-commands)
+11. [Application Management Commands](#application-management-commands)
+12. [YouTube-Specific Commands](#youtube-specific-commands)
+13. [Advanced Features](#advanced-features)
+
+---
+
+## Greeting & Politeness Commands
+
+### "Thank you"
+**Command:** `elif "thank you" in query:`
+
+**Description:** Responds politely to user gratitude
+
+**Example:**
+```
+You: "Thank you"
+Nova: "You're welcome"
+```
+
+**Use Cases:**
+- Acknowledge appreciation
+- Friendly interaction
+- Build rapport with the assistant
+
+**Code Implementation:**
+```python
+elif "thank you" in query:
+    speak("You're welcome")
+```
+
+**How to Test:**
+```bash
+python nova_ai_clean.py
+# Say: "Thank you"
+# Expected: "You're welcome"
+```
+
+---
+
+### "How are you"
+**Command:** `elif "how are you" in query:`
+
+**Description:** Responds with a friendly status update
+
+**Example:**
+```
+You: "How are you?"
+Nova: "I am doing great, thank you for asking!"
+```
+
+**Use Cases:**
+- Casual greeting
+- Check assistant status
+- Friendly conversation
+
+**Code Implementation:**
+```python
+elif "how are you" in query:
+    speak("I am doing great, thank you for asking!")
+```
+
+---
+
+## Time & Date Commands
+
+### "What time is it?"
+**Command:** `elif "time" in query:`
+
+**Description:** Tells you the current time
+
+**Example:**
+```
+You: "What time is it?"
+Nova: "Current time is 02:30 PM"
+```
+
+**Variations:**
+- "Tell me the time"
+- "Current time"
+- "What's the time"
+
+**Code Implementation:**
+```python
+def tell_time():
+    """Tell current time"""
+    time_now = datetime.datetime.now().strftime("%I:%M %p")
+    speak(f"Current time is {time_now}")
+
+# In main:
+elif "time" in query:
+    tell_time()
+```
+
+**Features:**
+- 12-hour format (AM/PM)
+- Accurate system time
+- Real-time updates
+
+---
+
+### "What is today's date?"
+**Command:** `elif "date" in query:`
+
+**Description:** Tells you the current date
+
+**Example:**
+```
+You: "What is today's date?"
+Nova: "Today's date is Thursday, January 08, 2026"
+```
+
+**Variations:**
+- "Tell me the date"
+- "Current date"
+- "What's the date today"
+
+**Code Implementation:**
+```python
+def tell_date():
+    """Tell current date"""
+    date_now = datetime.datetime.now().strftime("%A, %d %B %Y")
+    speak(f"Today's date is {date_now}")
+
+# In main:
+elif "date" in query:
+    tell_date()
+```
+
+**Features:**
+- Full date format (Day, Date Month Year)
+- Accurate system date
+- Includes day of week
+
+---
+
+## Information & Search Commands
+
+### "Search for [topic]"
+**Command:** `elif "search" in query:`
+
+**Description:** Searches Google for specified topic
+
+**Example:**
+```
+You: "Search for machine learning"
+Nova: "Searching Google for machine learning"
+[Opens Google search in browser]
+```
+
+**Variations:**
+- "Google search for..."
+- "Find information about..."
+- "Look up..."
+
+**Code Implementation:**
+```python
+def search_google(query):
+    """Search on Google"""
+    search_query = query.replace("search", "").strip()
+    if search_query:
+        speak(f"Searching Google for {search_query}")
+        webbrowser.open(f"https://www.google.com/search?q={search_query}")
+    else:
+        speak("Please specify what you want to search")
+
+# In main:
+elif "search" in query:
+    search_google(query)
+```
+
+**Features:**
+- Automatically opens browser
+- Removes search keyword from query
+- Confirms action with speech
+- Handles empty searches
+
+---
+
+### "Tell me about [topic]"
+**Command:** `elif "tell me about" in query:`
+
+**Description:** Gets Wikipedia summary for specified topic
+
+**Example:**
+```
+You: "Tell me about Python programming"
+Nova: [Speaks Wikipedia summary]
+```
+
+**Variations:**
+- "What is..."
+- "Explain..."
+- "Information about..."
+
+**Code Implementation:**
+```python
+def tell_about(topic):
+    """Get information from Wikipedia"""
+    topic_name = topic.replace("tell me about", "").strip()
+    if topic_name:
+        try:
+            info = wikipedia.summary(topic_name, sentences=2)
+            speak(info)
+        except:
+            speak(f"Sorry, I couldn't find information about {topic_name}")
+    else:
+        speak("Please specify a topic")
+
+# In main:
+elif "tell me about" in query:
+    tell_about(query)
+```
+
+**Features:**
+- Uses Wikipedia API
+- Returns 2-sentence summary
+- Error handling for not found
+- Speaks results naturally
+
+---
+
+### "What's my IP address?"
+**Command:** `elif "ip address" in query:`
+
+**Description:** Gets and announces your public IP address
+
+**Example:**
+```
+You: "What's my IP address?"
+Nova: "Your IP address is 192.168.1.100"
+```
+
+**Variations:**
+- "Get my IP"
+- "Show IP address"
+- "Tell me my IP"
+
+**Code Implementation:**
+```python
+def get_ip():
+    """Get your IP address"""
+    try:
+        ip = requests.get('https://api.ipify.org').text
+        speak(f"Your IP address is {ip}")
+    except:
+        speak("Unable to get IP address")
+
+# In main:
+elif "ip address" in query:
+    get_ip()
+```
+
+**Features:**
+- Uses ipify API (free)
+- Public IP address
+- Error handling
+
+---
+
+## Weather Commands
+
+### "What's the weather?"
+**Command:** `elif "weather" in query:`
+
+**Description:** Gets current weather (NO API KEY NEEDED!)
+
+**Example:**
+```
+You: "What's the weather?"
+Nova: [Auto-detects location]
+      "The weather in Ahmedabad is Sunny. Temperature is 28°C with 65% humidity."
+```
+
+**Variations:**
+- "Tell me the weather"
+- "Current weather"
+- "Weather in [city]"
+
+**Code Implementation:**
+```python
+def get_weather_free(location="auto"):
+    """
+    Get weather without any API keys!
+    Uses Open-Meteo API (free, no authentication)
+    """
+    # Detects location or uses specified city
+    # Returns: Temperature, Humidity, Conditions
+
+# In main:
+elif "weather" in query:
+    get_weather_free()
+```
+
+**Features:**
+- ✅ **NO API KEYS REQUIRED**
+- Auto-location detection
+- City search support
+- 5-day forecast available
+- Works globally
+
+**Special Feature Deep-Dive:**
+
+See [weather_module.py](weather_module.py) for complete implementation using:
+1. `open-meteo.com` - Free weather data (no auth)
+2. `ip-api.com` - Geolocation (no auth)
+3. `geocoding-api.open-meteo.com` - City search (no auth)
+
+---
+
+### "Weather in [city]"
+**Command:** `elif "weather" in query and [city_name]:`
+
+**Description:** Gets weather for specific city
+
+**Example:**
+```
+You: "Weather in London"
+Nova: "The weather in London is Cloudy. Temperature is 8°C with 80% humidity."
+```
+
+**Code Implementation:**
+```python
+def get_weather_free(location="London"):
+    """Gets weather for specific location"""
+    # Same as above but with city parameter
+```
+
+---
+
+## Entertainment Commands
+
+### "Play [song] on YouTube"
+**Command:** `elif "play" in query:`
+
+**Description:** Plays song on YouTube
+
+**Example:**
+```
+You: "Play Imagine by John Lennon"
+Nova: "Playing Imagine by John Lennon on YouTube"
+[Opens YouTube and plays song]
+```
+
+**Variations:**
+- "Play [artist name]"
+- "YouTube play..."
+- "Music play..."
+
+**Code Implementation:**
+```python
+def play_song_on_youtube(song):
+    """Play song on YouTube"""
+    song_name = song.replace("play", "").strip()
+    if song_name:
+        speak(f"Playing {song_name} on YouTube")
+        pwk.playonyt(song_name)
+    else:
+        speak("Please specify a song name")
+
+# In main:
+elif "play" in query:
+    play_song_on_youtube(query)
+```
+
+**Features:**
+- Automatically opens YouTube
+- Searches and plays song
+- Works with song or artist names
+
+---
+
+### "Stop"
+**Command:** `elif "stop" in query:`
+
+**Description:** Stops currently playing music
+
+**Example:**
+```
+You: "Stop"
+Nova: "Song stopped"
+[Pauses current playback]
+```
+
+**Code Implementation:**
+```python
+def stop_song():
+    """Stop playing song"""
+    try:
+        pyautogui.press('space')
+        speak("Song stopped")
+    except:
+        speak("Unable to stop the song")
+
+# In main:
+elif "stop" in query:
+    stop_song()
+```
+
+**Features:**
+- Uses space key (universal play/pause)
+- Works with most video players
+- Error handling
+
+---
+
+### "Tell me a joke"
+**Command:** `elif "joke" in query:`
+
+**Description:** Tells a random joke
+
+**Example:**
+```
+You: "Tell me a joke"
+Nova: [Tells a random programming joke]
+```
+
+**Code Implementation:**
+```python
+def tell_joke():
+    """Tell a random joke"""
+    joke = pyjokes.get_joke()
+    speak(joke)
+
+# In main:
+elif "joke" in query:
+    tell_joke()
+```
+
+**Features:**
+- Uses pyjokes library
+- Random selection
+- Programming humor
+
+---
+
+## System Information Commands
+
+### "System info"
+**Command:** `elif "system info" in query:`
+
+**Description:** Provides system information
+
+**Example:**
+```
+You: "System info"
+Nova: "System: Windows 11, Processor: Intel Core i7, Version: 22H2"
+```
+
+**Code Implementation:**
+```python
+def system_info():
+    """Get system information"""
+    info = platform.uname()
+    speak(f"System: {info.system}, Processor: {info.processor}")
+
+# In main:
+elif "system info" in query:
+    system_info()
+```
+
+**Returns:**
+- Operating System
+- Processor
+- Architecture
+- System version
+
+---
+
+### "CPU usage"
+**Command:** `elif "cpu" in query:`
+
+**Description:** Reports current CPU usage percentage
+
+**Example:**
+```
+You: "CPU usage"
+Nova: "CPU usage is 45 percent"
+```
+
+**Code Implementation:**
+```python
+def cpu_stats():
+    """Get CPU usage statistics"""
+    usage = psutil.cpu_percent()
+    speak(f"CPU usage is {usage} percent")
+
+# In main:
+elif "cpu" in query:
+    cpu_stats()
+```
+
+**Features:**
+- Real-time measurement
+- Percentage-based reporting
+- Instant response
+
+---
+
+### "Battery status"
+**Command:** `elif "battery" in query:`
+
+**Description:** Reports current battery percentage
+
+**Example:**
+```
+You: "Battery status"
+Nova: "Battery is at 85 percent"
+```
+
+**Code Implementation:**
+```python
+def battery_status():
+    """Get battery status"""
+    try:
+        battery = psutil.sensors_battery()
+        speak(f"Battery is at {battery.percent} percent")
+    except:
+        speak("Unable to get battery information")
+
+# In main:
+elif "battery" in query:
+    battery_status()
+```
+
+**Features:**
+- Shows battery percentage
+- Works on laptops/mobile devices
+- Error handling for desktops
+
+---
+
+### "Speed test"
+**Command:** `elif "speed test" in query:`
+
+**Description:** Tests internet download and upload speeds
+
+**Example:**
+```
+You: "Speed test"
+Nova: "Download speed is 45.23 mbps and upload speed is 12.45 mbps"
+[Takes 1-2 minutes]
+```
+
+**Code Implementation:**
+```python
+def internet_speed():
+    """Test internet speed"""
+    try:
+        speak("Testing internet speed. This may take a minute...")
+        st = speedtest.Speedtest()
+        down = round(st.download() / 1_000_000, 2)
+        up = round(st.upload() / 1_000_000, 2)
+        speak(f"Download speed is {down} mbps and upload speed is {up} mbps")
+    except Exception as e:
+        speak("Unable to test internet speed")
+
+# In main:
+elif "speed test" in query:
+    internet_speed()
+```
+
+**Features:**
+- Uses Speedtest API
+- Returns Mbps values
+- Warning about time duration
+- Error handling
+
+---
+
+## Media Control Commands
+
+### "Take a screenshot"
+**Command:** `elif "screenshot" in query:`
+
+**Description:** Captures and saves screenshot
+
+**Example:**
+```
+You: "Take a screenshot"
+Nova: "Screenshot saved"
+[Saves as screenshot.png in current directory]
+```
+
+**Code Implementation:**
+```python
+def screenshot():
+    """Take a screenshot"""
+    try:
+        img = pyautogui.screenshot()
+        img.save("screenshot.png")
+        speak("Screenshot saved")
+    except:
+        speak("Unable to take screenshot")
+
+# In main:
+elif "screenshot" in query:
+    screenshot()
+```
+
+**Features:**
+- Captures entire screen
+- Saves as PNG
+- Confirms action with speech
+
+---
+
+### "Open camera"
+**Command:** `elif "camera" in query:`
+
+**Description:** Opens webcam feed
+
+**Example:**
+```
+You: "Open camera"
+Nova: "Camera opened. Press Q to close"
+[Shows live camera feed]
+```
+
+**Code Implementation:**
+```python
+def open_camera():
+    """Open system camera"""
+    try:
+        cap = cv2.VideoCapture(0)
+        speak("Camera opened. Press Q to close")
+        
+        while True:
+            ret, frame = cap.read()
+            if ret:
+                cv2.imshow("Camera", frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        
+        cap.release()
+        cv2.destroyAllWindows()
+        speak("Camera closed")
+    except:
+        speak("Unable to open camera")
+
+# In main:
+elif "camera" in query:
+    open_camera()
+```
+
+**Features:**
+- Uses OpenCV (cv2)
+- Real-time feed
+- Press 'Q' to close
+- Error handling
+
+---
+
+## Volume & Audio Commands
+
+### "Volume up"
+**Command:** `elif "volume up" in query and "youtube" not in query:`
+
+**Description:** Increases system volume
+
+**Example:**
+```
+You: "Volume up"
+Nova: "Volume increased"
+[Increases system volume by ~25%]
+```
+
+**Code Implementation:**
+```python
+def volume_up():
+    """Increase system volume"""
+    for _ in range(5):
+        pyautogui.press("volumeup")
+    speak("Volume increased")
+
+# In main:
+elif "volume up" in query and "youtube" not in query:
+    volume_up()
+```
+
+**Features:**
+- Incremental increase
+- System-level control
+- Immediate effect
+
+---
+
+### "Volume down"
+**Command:** `elif "volume down" in query and "youtube" not in query:`
+
+**Description:** Decreases system volume
+
+**Example:**
+```
+You: "Volume down"
+Nova: "Volume decreased"
+[Decreases system volume by ~25%]
+```
+
+**Code Implementation:**
+```python
+def volume_down():
+    """Decrease system volume"""
+    for _ in range(5):
+        pyautogui.press("volumedown")
+    speak("Volume decreased")
+
+# In main:
+elif "volume down" in query and "youtube" not in query:
+    volume_down()
+```
+
+---
+
+### "Mute"
+**Command:** `elif "mute" in query and "youtube" not in query:`
+
+**Description:** Mutes system audio
+
+**Example:**
+```
+You: "Mute"
+Nova: "Volume muted"
+[Mutes all system audio]
+```
+
+**Code Implementation:**
+```python
+def mute_volume():
+    """Mute system volume"""
+    pyautogui.press("volumemute")
+    speak("Volume muted")
+
+# In main:
+elif "mute" in query and "youtube" not in query:
+    mute_volume()
+```
+
+---
+
+## System Control Commands
+
+### "Lock system"
+**Command:** `elif "lock" in query:`
+
+**Description:** Locks the computer
+
+**Example:**
+```
+You: "Lock system"
+Nova: "Locking the system"
+[Locks computer - requires password to unlock]
+```
+
+**Code Implementation:**
+```python
+def lock_system():
+    """Lock the system"""
+    speak("Locking the system")
+    if platform.system() == "Windows":
+        os.system('rundll32.exe user32.dll,LockWorkStation')
+    elif platform.system() == "Darwin":  # macOS
+        os.system('pmset displaysleepnow')
+    elif platform.system() == "Linux":
+        os.system('loginctl lock-session')
+
+# In main:
+elif "lock" in query:
+    lock_system()
+```
+
+**Features:**
+- Cross-platform support
+- Security feature
+- Immediate action
+
+---
+
+### "Shutdown"
+**Command:** `elif "shutdown" in query:`
+
+**Description:** Shuts down the computer
+
+**Example:**
+```
+You: "Shutdown"
+Nova: "Shutting down the system"
+[Initiates shutdown sequence]
+```
+
+**⚠️ WARNING:** This will close all applications and shut down your computer!
+
+**Code Implementation:**
+```python
+def shutdown():
+    """Shutdown the system"""
+    speak("Shutting down the system")
+    if platform.system() == "Windows":
+        os.system('shutdown /s /f /t 0')
+    elif platform.system() in ["Linux", "Darwin"]:
+        os.system('shutdown now')
+
+# In main:
+elif "shutdown" in query:
+    shutdown()
+```
+
+---
+
+### "Restart"
+**Command:** `elif "restart" in query:`
+
+**Description:** Restarts the computer
+
+**Example:**
+```
+You: "Restart"
+Nova: "Restarting the system"
+[Initiates restart sequence]
+```
+
+**⚠️ WARNING:** This will close all applications and restart your computer!
+
+**Code Implementation:**
+```python
+def restart():
+    """Restart the system"""
+    speak("Restarting the system")
+    if platform.system() == "Windows":
+        os.system('shutdown /r /t 1')
+    elif platform.system() in ["Linux", "Darwin"]:
+        os.system('shutdown -r now')
+
+# In main:
+elif "restart" in query:
+    restart()
+```
+
+---
+
+## Productivity Commands
+
+### "Write note"
+**Command:** `elif "write note" in query:`
+
+**Description:** Records a voice note
+
+**Example:**
+```
+You: "Write note"
+Nova: "What should I write?"
+You: "Remember to buy groceries"
+Nova: "Note saved"
+[Saves to note.txt]
+```
+
+**Code Implementation:**
+```python
+def write_note():
+    """Write a note to file"""
+    speak("What should I write?")
+    note = take_command()
+    if note:
+        try:
+            with open("note.txt", "w") as f:
+                f.write(note)
+            speak("Note saved")
+        except:
+            speak("Unable to save note")
+
+# In main:
+elif "write note" in query:
+    write_note()
+```
+
+**Features:**
+- Voice-to-text note
+- File storage
+- Overwrites previous note
+- Error handling
+
+---
+
+### "Read note"
+**Command:** `elif "read note" in query:`
+
+**Description:** Reads saved note aloud
+
+**Example:**
+```
+You: "Read note"
+Nova: "Remember to buy groceries"
+```
+
+**Code Implementation:**
+```python
+def read_note():
+    """Read saved note"""
+    try:
+        with open("note.txt", "r") as f:
+            content = f.read()
+        if content:
+            speak(content)
+        else:
+            speak("Note is empty")
+    except:
+        speak("No note found")
+
+# In main:
+elif "read note" in query:
+    read_note()
+```
+
+**Features:**
+- Reads from note.txt
+- Text-to-speech output
+- Error handling for missing files
+
+---
+
+### "Open website [URL]"
+**Command:** `elif "website" in query:`
+
+**Description:** Opens specified website in browser
+
+**Example:**
+```
+You: "Open website github.com"
+Nova: "Opening github.com"
+[Opens GitHub in default browser]
+```
+
+**Code Implementation:**
+```python
+def open_website(url=""):
+    """Open a website"""
+    if url:
+        try:
+            webbrowser.open(url)
+            speak(f"Opening {url}")
+        except:
+            speak("Unable to open website")
+    else:
+        speak("Please specify a website URL")
+
+# In main:
+elif "website" in query:
+    url = query.replace("website", "").strip()
+    open_website(url)
+```
+
+**Features:**
+- Opens in default browser
+- URL parsing
+- Error handling
+
+---
+
+## Application Management Commands
+
+### "Change app"
+**Command:** `elif "change app" in query or "switch app" in query:`
+
+**Description:** Switches to next open application
+
+**Example:**
+```
+You: "Change app"
+Nova: "Switched application"
+[Activates next open app using Alt+Tab]
+```
+
+**Code Implementation:**
+```python
+def change_app():
+    """Switch between open applications"""
+    pyautogui.hotkey('alt', 'tab')
+    speak("Switched application")
+
+# In main:
+elif "change app" in query or "switch app" in query:
+    change_app()
+```
+
+---
+
+### "Close app"
+**Command:** `elif "close app" in query:`
+
+**Description:** Closes current application
+
+**Example:**
+```
+You: "Close app"
+Nova: "Closed application"
+[Closes active window using Alt+F4]
+```
+
+**Code Implementation:**
+```python
+def close_app():
+    """Close current application"""
+    pyautogui.hotkey('alt', 'f4')
+    speak("Closed application")
+
+# In main:
+elif "close app" in query:
+    close_app()
+```
+
+---
+
+## YouTube-Specific Commands
+
+### "YouTube play" / "YouTube pause"
+**Command:** `elif "youtube play" in query or "youtube pause" in query:`
+
+**Description:** Plays or pauses YouTube video
+
+**Example:**
+```
+You: "YouTube play"
+Nova: "Play or pause"
+[Toggles playback]
+```
+
+**Code Implementation:**
+```python
+def yt_play_pause():
+    """Play or pause YouTube"""
+    pyautogui.press('k')
+    speak("Play or pause")
+
+# In main:
+elif "youtube play" in query or "youtube pause" in query:
+    yt_play_pause()
+```
+
+---
+
+### "YouTube next"
+**Command:** `elif "youtube next" in query or "next video" in query:`
+
+**Description:** Skips to next YouTube video
+
+**Example:**
+```
+You: "YouTube next"
+Nova: "Next video"
+[Plays next video]
+```
+
+**Code Implementation:**
+```python
+def yt_next():
+    """Next YouTube video"""
+    pyautogui.hotkey('shift', 'n')
+    speak("Next video")
+
+# In main:
+elif "youtube next" in query:
+    yt_next()
+```
+
+---
+
+### "YouTube previous"
+**Command:** `elif "youtube previous" in query or "previous video" in query:`
+
+**Description:** Goes to previous YouTube video
+
+**Code Implementation:**
+```python
+def yt_previous():
+    """Previous YouTube video"""
+    pyautogui.hotkey('shift', 'p')
+    speak("Previous video")
+
+# In main:
+elif "youtube previous" in query:
+    yt_previous()
+```
+
+---
+
+### "Full screen YouTube"
+**Command:** `elif "full screen youtube" in query:`
+
+**Description:** Enables YouTube fullscreen mode
+
+**Code Implementation:**
+```python
+def yt_fullscreen():
+    """YouTube fullscreen"""
+    pyautogui.press('f')
+    speak("Full screen")
+
+# In main:
+elif "full screen youtube" in query:
+    yt_fullscreen()
+```
+
+---
+
+### "Exit full screen"
+**Command:** `elif "exit full screen" in query:`
+
+**Description:** Exits YouTube fullscreen mode
+
+**Code Implementation:**
+```python
+def yt_exit_fullscreen():
+    """Exit YouTube fullscreen"""
+    pyautogui.press('esc')
+    speak("Exit full screen")
+
+# In main:
+elif "exit full screen" in query:
+    yt_exit_fullscreen()
+```
+
+---
+
+### "Forward YouTube"
+**Command:** `elif "forward youtube" in query:`
+
+**Description:** Fast forwards YouTube video (10 seconds)
+
+**Code Implementation:**
+```python
+def yt_forward():
+    """Forward YouTube video"""
+    pyautogui.press('l')
+    speak("Forward")
+
+# In main:
+elif "forward youtube" in query:
+    yt_forward()
+```
+
+---
+
+### "Backward YouTube"
+**Command:** `elif "backward youtube" in query:`
+
+**Description:** Rewinds YouTube video (10 seconds)
+
+**Code Implementation:**
+```python
+def yt_backward():
+    """Backward YouTube video"""
+    pyautogui.press('j')
+    speak("Backward")
+
+# In main:
+elif "backward youtube" in query:
+    yt_backward()
+```
+
+---
+
+### "Volume up YouTube" / "Volume down YouTube" / "Mute YouTube"
+**Command:** `elif "volume up youtube" in query:` / `elif "volume down youtube" in query:` / `elif "mute youtube" in query:`
+
+**Description:** Controls YouTube player volume
+
+**Code Implementation:**
+```python
+def yt_volume_up():
+    pyautogui.press('up')
+    speak("Volume up")
+
+def yt_volume_down():
+    pyautogui.press('down')
+    speak("Volume down")
+
+def yt_mute():
+    pyautogui.press('m')
+    speak("Muted")
+
+# In main:
+elif "volume up youtube" in query:
+    yt_volume_up()
+elif "volume down youtube" in query:
+    yt_volume_down()
+elif "mute youtube" in query:
+    yt_mute()
+```
+
+---
+
+## Advanced Features
+
+### "News"
+**Command:** `elif "news" in query:`
+
+**Description:** Reads top news headlines (requires NEWSDATA_API_KEY)
+
+**Example:**
+```
+You: "News"
+Nova: [Reads top 5 headlines]
+```
+
+**Requirements:**
+- Free API key from gnews.io
+- Set NEWSDATA_API_KEY in .env file
+
+**Code Implementation:**
+```python
+def tell_news():
+    """Get top news headlines"""
+    api_key = os.getenv("NEWSDATA_API_KEY")
+    
+    if not api_key:
+        speak("News API key not configured")
+        return
+    
+    # Implementation here
+```
+
+---
+
+### "Set alarm for [time]"
+**Command:** `elif "alarm" in query:`
+
+**Description:** Sets alarm for specified time
+
+**Example:**
+```
+You: "Set alarm for 7:00 AM"
+Nova: "Alarm set for 7:00 AM"
+[Runs in background and alerts at specified time]
+```
+
+**Code Implementation:**
+```python
+def alarm(time_str):
+    """Set an alarm for specific time"""
+    speak(f"Alarm set for {time_str}")
+    while True:
+        if datetime.datetime.now().strftime("%H:%M") == time_str:
+            speak("Time to wake up!")
+            break
+        time.sleep(30)
+
+# In main:
+elif "alarm" in query:
+    alarm_time = query.replace("set alarm for", "").strip()
+    threading.Thread(target=alarm, args=(alarm_time,), daemon=True).start()
+```
+
+---
+
+### "Change language"
+**Command:** `elif "language" in query:`
+
+**Description:** Changes assistant's spoken language
+
+**Example:**
+```
+You: "Change language"
+Nova: "Which language would you like me to speak?"
+You: "Hindi"
+Nova: "अब मैं हिंदी में बात करूँगी।" (Now I'll speak in Hindi)
+```
+
+**Supported Languages:**
+- English (en)
+- Hindi (hi)
+- Gujarati (gu)
+
+**Code Implementation:**
+```python
+def change_language():
+    """Change assistant language"""
+    speak("Which language would you like me to speak?")
+    lang = take_command()
+    
+    if "hindi" in lang:
+        engine.setProperty('voice', voices[1].id)
+        speak("अब मैं हिंदी में बात करूँगी।")
+    elif "english" in lang:
+        engine.setProperty('voice', voices[0].id)
+        speak("I will now speak in English.")
+
+# In main:
+elif "language" in query:
+    change_language()
+```
+
+---
+
+### "Exit" / "Bye"
+**Command:** `elif "exit" in query or "bye" in query or "goodbye" in query:`
+
+**Description:** Closes NOVA AI assistant
+
+**Example:**
+```
+You: "Goodbye"
+Nova: "Goodbye!"
+[Application exits]
+```
+
+**Code Implementation:**
+```python
+elif "exit" in query or "bye" in query or "goodbye" in query:
+    speak("Goodbye!")
+    break
+```
+
+---
+
+## Command Summary Table
+
+| Category | Command | Keyword | Function |
+|----------|---------|---------|----------|
+| **Greeting** | Thank you | "thank you" | `speak("You're welcome")` |
+| **Greeting** | How are you | "how are you" | `speak("I am doing great...")` |
+| **Time** | What time is it | "time" | `tell_time()` |
+| **Date** | What is today's date | "date" | `tell_date()` |
+| **Search** | Search Google | "search" | `search_google(query)` |
+| **Info** | Tell me about | "tell me about" | `tell_about(query)` |
+| **Info** | IP Address | "ip address" | `get_ip()` |
+| **Weather** | Current weather | "weather" | `get_weather_free()` |
+| **Entertainment** | Play song | "play" | `play_song_on_youtube(query)` |
+| **Entertainment** | Stop music | "stop" | `stop_song()` |
+| **Entertainment** | Joke | "joke" | `tell_joke()` |
+| **System** | System info | "system info" | `system_info()` |
+| **System** | CPU usage | "cpu" | `cpu_stats()` |
+| **System** | Battery | "battery" | `battery_status()` |
+| **System** | Speed test | "speed test" | `internet_speed()` |
+| **Media** | Screenshot | "screenshot" | `screenshot()` |
+| **Media** | Camera | "camera" | `open_camera()` |
+| **Volume** | Volume up | "volume up" | `volume_up()` |
+| **Volume** | Volume down | "volume down" | `volume_down()` |
+| **Volume** | Mute | "mute" | `mute_volume()` |
+| **Control** | Lock | "lock" | `lock_system()` |
+| **Control** | Shutdown | "shutdown" | `shutdown()` |
+| **Control** | Restart | "restart" | `restart()` |
+| **Productivity** | Write note | "write note" | `write_note()` |
+| **Productivity** | Read note | "read note" | `read_note()` |
+| **Productivity** | Open website | "website" | `open_website(url)` |
+| **App** | Change app | "change app" | `change_app()` |
+| **App** | Close app | "close app" | `close_app()` |
+| **YouTube** | Play/Pause | "youtube play" | `yt_play_pause()` |
+| **YouTube** | Next | "youtube next" | `yt_next()` |
+| **YouTube** | Previous | "youtube previous" | `yt_previous()` |
+| **YouTube** | Fullscreen | "fullscreen youtube" | `yt_fullscreen()` |
+| **Advanced** | News | "news" | `tell_news()` |
+| **Advanced** | Alarm | "alarm" | `alarm(time)` |
+| **Advanced** | Language | "language" | `change_language()` |
+| **Exit** | Exit/Bye | "exit" / "bye" | Program terminates |
+
+---
+
+## How to Add Custom Commands
+
+Want to add more commands? Here's the template:
+
+```python
+# 1. Create function
+def your_command_name():
+    """Description of what command does"""
+    result = do_something()
+    speak(f"Result: {result}")
+
+# 2. Add to main() function
+elif "[keyword]" in query:
+    your_command_name()
+
+# 3. Test it
+# Say the keyword into microphone
+```
+
+**Example: Adding a "time to dinner" command**
+
+```python
+def time_to_dinner():
+    """Tell how long until dinner time"""
+    now = datetime.datetime.now()
+    dinner_time = now.replace(hour=18, minute=0)
+    
+    if now > dinner_time:
+        dinner_time = dinner_time + datetime.timedelta(days=1)
+    
+    time_left = dinner_time - now
+    hours = time_left.seconds // 3600
+    minutes = (time_left.seconds % 3600) // 60
+    
+    speak(f"{hours} hours and {minutes} minutes until dinner")
+
+# In main:
+elif "dinner" in query:
+    time_to_dinner()
+```
+
+---
+
+## Tips for Voice Recognition
+
+### Best Practices:
+1. **Speak clearly** - Enunciate words properly
+2. **Avoid background noise** - Quiet environment works best
+3. **Use keywords** - Include main command keyword in phrase
+4. **Natural pace** - Don't rush or slow down excessively
+5. **Short sentences** - Easier to recognize
+
+### Voice Command Tips:
+```
+✅ GOOD:
+- "What time is it?"
+- "Tell me a joke"
+- "Open camera"
+- "Search for Python"
+
+❌ AVOID:
+- "Um, what is the time thing"
+- "Hey Nova, um, joke please?"
+- "SEARCH FOR PYTHON PROGRAMMING LANGUAGE WIKIPEDIA"
+```
+
+---
+
+## Troubleshooting Commands
+
+### Microphone Not Working
+```bash
+python -m speech_recognition
+# Test your microphone
+```
+
+### Command Not Recognized
+```python
+# Enable debug mode (edit nova_ai_clean.py)
+print("You:", command)  # See what was recognized
+```
+
+### Weather Not Working
+Check internet connection:
+```bash
+ping google.com
+curl http://ip-api.com/json
+```
+
+---
+
+## Contribution Guide
+
+Found a bug or want to add commands? 
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details!
+
+Suggested features to add:
+- [ ] Email sending
+- [ ] Calendar integration
+- [ ] Smart home control
+- [ ] Translation feature
+- [ ] Stock market updates
+- [ ] Todo list management
+
+---
+
+## Related Documentation
+
+- [README.md](README.md) - Main project overview
+- [SETUP_GUIDE.md](SETUP_GUIDE.md) - Installation guide
+- [weather_module.py](weather_module.py) - Weather feature details
+- [nova_ai_clean.py](nova_ai_clean.py) - Main source code
+- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
+
+---
+
+<div align="center">
+
+## Need Help?
+
+Check the documentation files or open an issue on GitHub!
+
+**Made with ❤️ for voice automation enthusiasts**
+
+[⬆ Back to Top](#-nova-ai---voice-commands-documentation)
+
+</div>
