@@ -1,6 +1,6 @@
 """
 NOVA AI: Full Personal Assistant with 30+ Features
-Author: [Your Name]
+Author: [shah tishhya]
 Version: 2.0 (API Key Secured)
 
 SETUP INSTRUCTIONS:
@@ -16,10 +16,11 @@ SETUP INSTRUCTIONS:
 3. Run the script:
    python nova_ai_clean.py
 """
+# NOVA AI – Real-Time 
+# Weather (No API, No Signup, Free)
 
 import cv2
 import os
-import numpy as np
 import speech_recognition as sr
 import pyttsx3
 import pywhatkit as pwk
@@ -27,629 +28,233 @@ import wikipedia
 import datetime
 import time
 import threading
-import requests
 import webbrowser
-import random
-import sys
-import subprocess
 import pyjokes
 import psutil
 import pyautogui
-import pyperclip
-import json
 import platform
-from dotenv import load_dotenv
+import speedtest
+import requests
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
+import urllib.parse
+from requests.exceptions import RequestException, ConnectTimeout
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Initialize Text to Speech engine
+# ---------------- TEXT TO SPEECH ----------------
 engine = pyttsx3.init()
-engine.setProperty('rate', 170)
-engine.setProperty('volume', 1.0)
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
-
-# Speech Recognition
-recognizer = sr.Recognizer()
-
+engine.setProperty("rate", 170)
+voices = engine.getProperty("voices")
+engine.setProperty("voice", voices[1].id)
 
 def speak(text):
-    """Convert text to speech and print to console"""
     print("AI:", text)
     engine.say(text)
     engine.runAndWait()
 
+# ---------------- SPEECH RECOGNITION ----------------
+recognizer = sr.Recognizer()
 
 def take_command():
-    """Capture and recognize voice command"""
     with sr.Microphone() as source:
         print("Listening...")
         recognizer.adjust_for_ambient_noise(source)
         audio = recognizer.listen(source)
-        try:
-            print("Recognizing...")
-            command = recognizer.recognize_google(audio, language='en-in')
-            print("You:", command)
-            return command.lower()
-        except Exception as e:
-            print("Error:", e)
-            speak("Sorry, I didn't get that.")
-            return ""
+    try:
+        command = recognizer.recognize_google(audio, language="en-in")
+        print("You:", command)
+        return command.lower()
+    except:
+        speak("Sorry, I didn't understand.")
+        return ""
 
-
-# ==================== BASIC FEATURES ====================
-
+# ---------------- BASIC FEATURES ----------------
 def tell_time():
-    """Tell current time"""
-    time_now = datetime.datetime.now().strftime("%I:%M %p")
-    speak(f"Current time is {time_now}")
-
+    speak(datetime.datetime.now().strftime("Time is %I:%M %p"))
 
 def tell_date():
-    """Tell current date"""
-    date_now = datetime.datetime.now().strftime("%A, %d %B %Y")
-    speak(f"Today's date is {date_now}")
-
+    speak(datetime.datetime.now().strftime("Today is %A %d %B %Y"))
 
 def search_google(query):
-    """Search on Google"""
-    search_query = query.replace("search", "").strip()
-    if search_query:
-        speak(f"Searching Google for {search_query}")
-        webbrowser.open(f"https://www.google.com/search?q={search_query}")
-    else:
-        speak("Please specify what you want to search")
+    webbrowser.open(f"https://www.google.com/search?q={query}")
+    speak("Searching on Google")
 
-
-def play_song_on_youtube(song):
-    """Play song on YouTube"""
-    song_name = song.replace("play", "").strip()
-    if song_name:
-        speak(f"Playing {song_name} on YouTube")
-        pwk.playonyt(song_name)
-    else:
-        speak("Please specify a song name")
-
+def play_song(song):
+    speak(f"Playing {song}")
+    pwk.playonyt(song)
 
 def stop_song():
-    """Stop playing song"""
-    try:
-        pyautogui.press('space')
-        speak("Song stopped")
-    except:
-        speak("Unable to stop the song")
-
+    pyautogui.press("space")
+    speak("Song stopped")
 
 def tell_about(topic):
-    """Get information from Wikipedia"""
-    topic_name = topic.replace("tell me about", "").strip()
-    if topic_name:
-        try:
-            info = wikipedia.summary(topic_name, sentences=2)
-            speak(info)
-        except:
-            speak(f"Sorry, I couldn't find information about {topic_name}")
-    else:
-        speak("Please specify a topic")
-
-
-def tell_joke():
-    """Tell a random joke"""
-    joke = pyjokes.get_joke()
-    speak(joke)
-
-
-# ==================== WEATHER FUNCTION ====================
-
-def get_weather(city="gps"):
-    """
-    Get weather information using AccuWeather API.
-    If city is empty, "gps", "current", "here", or "location", detect location using IP.
-    Otherwise, get weather for that specific city.
-    
-    API Key must be set in .env file as ACCUWEATHER_API_KEY
-    """
-    API_KEY = os.getenv("ACCUWEATHER_API_KEY")
-    
-    if not API_KEY:
-        speak("Weather API key not configured. Please set ACCUWEATHER_API_KEY in .env file")
-        print("❌ ACCUWEATHER_API_KEY not found in .env file")
-        return
-    
     try:
-        target = city.strip().lower() if isinstance(city, str) else ""
-        
-        # Detect location using IP if GPS mode
-        if not target or target in ("gps", "current", "here", "location"):
-            speak("Detecting your location...")
-            try:
-                geo = requests.get("http://ip-api.com/json", timeout=6).json()
-                lat, lon = geo.get("lat"), geo.get("lon")
-                city_name = geo.get("city", "")
-            except Exception:
-                lat = lon = None
-                city_name = ""
-            
-            if lat is None or lon is None:
-                speak("Unable to detect GPS location.")
-                return
-            
-            # Get AccuWeather location key using coordinates
-            loc_url = f"https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey={API_KEY}&q={lat},{lon}"
-            location_data = requests.get(loc_url, timeout=6).json()
-        else:
-            # Get AccuWeather location key using city name
-            speak(f"Fetching weather for {city.title()}...")
-            loc_url = f"https://dataservice.accuweather.com/locations/v1/cities/search?apikey={API_KEY}&q={city}"
-            location_data = requests.get(loc_url, timeout=6).json()
-        
-        if not location_data:
-            speak("City not found. Please try again.")
-            return
-        
-        location_key = location_data[0]["Key"]
-        location_name = location_data[0]["LocalizedName"]
-        
-        # Get current conditions
-        weather_url = f"https://dataservice.accuweather.com/currentconditions/v1/{location_key}?apikey={API_KEY}&details=true"
-        weather_data = requests.get(weather_url, timeout=6).json()
-        
-        if not weather_data:
-            speak("Weather data not available.")
-            return
-        
-        weather_text = weather_data[0]["WeatherText"]
-        temperature = weather_data[0]["Temperature"]["Metric"]["Value"]
-        humidity = weather_data[0]["RelativeHumidity"]
-        
-        # Speak weather info
-        report = f"The weather in {location_name} is {weather_text}. Temperature is {temperature}°C with {humidity}% humidity."
-        speak(report)
-    
-    except Exception as e:
-        print("Weather error:", e)
-        speak("Unable to get weather information.")
-
-
-# ==================== SYSTEM FEATURES ====================
-
-def open_website(url=""):
-    """Open a website"""
-    if url:
-        try:
-            webbrowser.open(url)
-            speak(f"Opening {url}")
-        except:
-            speak("Unable to open website")
-    else:
-        speak("Please specify a website URL")
-
-
-def get_ip():
-    """Get your IP address"""
-    try:
-        ip = requests.get('https://api.ipify.org').text
-        speak(f"Your IP address is {ip}")
+        speak(wikipedia.summary(topic, sentences=2))
     except:
-        speak("Unable to get IP address")
+        speak("Information not found")
 
+# ---------------- REAL-TIME WEATHER (NO API) ----------------
+def get_weather(city):
+    # Prepare city (URL-encode). If empty, wttr.in will use IP-based location.
+    if city:
+        city_enc = urllib.parse.quote_plus(city)
+    else:
+        city_enc = ""
+
+    url = f"https://wttr.in/{city_enc}?format=3"
+
+    # Try a few times with exponential backoff
+    for attempt in range(1, 4):
+        try:
+            response = requests.get(url, timeout=8 + (attempt - 1) * 2)
+            response.raise_for_status()
+            weather = response.text.strip()
+            speak(f"Current weather: {weather}")
+            return
+
+        except ConnectTimeout as e:
+            print(f"Weather timeout (attempt {attempt}):", e)
+            # On first timeout, try plain HTTP fallback once
+            if attempt == 1:
+                try:
+                    url_http = url.replace("https://", "http://")
+                    response = requests.get(url_http, timeout=8)
+                    response.raise_for_status()
+                    weather = response.text.strip()
+                    speak(f"Current weather: {weather}")
+                    return
+                except RequestException:
+                    pass
+            time.sleep(attempt)
+
+        except RequestException as e:
+            print(f"Weather request error (attempt {attempt}):", e)
+            time.sleep(attempt)
+
+    # All attempts failed
+    speak("Unable to fetch weather right now. Please check your internet connection.")
+
+
+# ---------------- SYSTEM FEATURES ----------------
+def tell_joke():
+    speak(pyjokes.get_joke())
 
 def system_info():
-    """Get system information"""
     info = platform.uname()
-    speak(f"System: {info.system}, Processor: {info.processor}")
-
+    speak(f"System {info.system} with processor {info.processor}")
 
 def cpu_stats():
-    """Get CPU usage statistics"""
-    usage = psutil.cpu_percent()
-    speak(f"CPU usage is {usage} percent")
-
+    speak(f"CPU usage is {psutil.cpu_percent()} percent")
 
 def battery_status():
-    """Get battery status"""
-    try:
-        battery = psutil.sensors_battery()
-        speak(f"Battery is at {battery.percent} percent")
-    except:
-        speak("Unable to get battery information")
-
+    battery = psutil.sensors_battery()
+    speak(f"Battery is at {battery.percent} percent")
 
 def internet_speed():
-    """Test internet speed"""
     try:
-        speak("Testing internet speed. This may take a minute...")
         st = speedtest.Speedtest()
-        down = round(st.download() / 1_000_000, 2)
-        up = round(st.upload() / 1_000_000, 2)
-        speak(f"Download speed is {down} mbps and upload speed is {up} mbps")
-    except Exception as e:
-        print("Speed test error:", e)
-        speak("Unable to test internet speed")
-
+        speak(f"Download speed {round(st.download()/1e6,2)} Mbps")
+    except:
+        speak("Speed test not available")
 
 def screenshot():
-    """Take a screenshot"""
-    try:
-        img = pyautogui.screenshot()
-        img.save("screenshot.png")
-        speak("Screenshot saved")
-    except:
-        speak("Unable to take screenshot")
+    img = pyautogui.screenshot()
+    img.save("screenshot.png")
+    speak("Screenshot saved")
 
-
-def write_note():
-    """Write a note to file"""
-    speak("What should I write?")
-    note = take_command()
-    if note:
-        try:
-            with open("note.txt", "w") as f:
-                f.write(note)
-            speak("Note saved")
-        except:
-            speak("Unable to save note")
-
-
-def read_note():
-    """Read saved note"""
-    try:
-        with open("note.txt", "r") as f:
-            content = f.read()
-        if content:
-            speak(content)
-        else:
-            speak("Note is empty")
-    except:
-        speak("No note found")
-
-
-# ==================== NEWS FEATURE ====================
-
-def tell_news():
-    """Get top news headlines"""
-    api_key = os.getenv("NEWSDATA_API_KEY")
-    
-    if not api_key:
-        print("❌ NEWSDATA_API_KEY not found in .env file")
-        speak("News API key not configured. Please set NEWSDATA_API_KEY in .env file")
-        return
-    
-    url = f"https://gnews.io/api/1/news?apikey={api_key}&country=in&language=en&category=top"
-    try:
-        res = requests.get(url, timeout=8)
-        res.raise_for_status()
-        data = res.json()
-        articles = data.get("articles", [])[:5]
-        
-        if not articles:
-            speak("No news articles found")
-            return
-        
-        print("\n🗞️ Today's Top News:\n")
-        news_text = "Here are the top 5 news headlines: "
-        
-        for i, article in enumerate(articles, start=1):
-            title = article.get("title", "No title")
-            print(f"{i}. {title}")
-            news_text += f"{i}. {title}. "
-        
-        speak(news_text)
-    
-    except Exception as e:
-        print("❌ Error fetching news:", e)
-        speak("Unable to fetch news")
-
-
-# ==================== CAMERA FEATURE ====================
-
-def open_camera():
-    """Open system camera"""
-    try:
-        cap = cv2.VideoCapture(0)
-        speak("Camera opened. Press Q to close")
-        
-        while True:
-            ret, frame = cap.read()
-            if ret:
-                cv2.imshow("Camera", frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-        
-        cap.release()
-        cv2.destroyAllWindows()
-        speak("Camera closed")
-    except:
-        speak("Unable to open camera")
-
-
-# ==================== SYSTEM CONTROLS ====================
-
+# ---------------- SYSTEM CONTROL ----------------
 def shutdown():
-    """Shutdown the system"""
-    speak("Shutting down the system")
-    if platform.system() == "Windows":
-        os.system('shutdown /s /f /t 0')
-    elif platform.system() in ["Linux", "Darwin"]:
-        os.system('shutdown now')
-
+    speak("Shutting down system")
+    os.system("shutdown /s /t 1")
 
 def restart():
-    """Restart the system"""
-    speak("Restarting the system")
-    if platform.system() == "Windows":
-        os.system('shutdown /r /t 1')
-    elif platform.system() in ["Linux", "Darwin"]:
-        os.system('shutdown -r now')
-
+    speak("Restarting system")
+    os.system("shutdown /r /t 1")
 
 def lock_system():
-    """Lock the system"""
-    speak("Locking the system")
-    if platform.system() == "Windows":
-        os.system('rundll32.exe user32.dll,LockWorkStation')
-    elif platform.system() == "Darwin":  # macOS
-        os.system('pmset displaysleepnow')
-    elif platform.system() == "Linux":
-        os.system('loginctl lock-session')
-
-
-# ==================== VOLUME CONTROLS ====================
+    speak("Locking system")
+    os.system("rundll32.exe user32.dll,LockWorkStation")
 
 def volume_up():
-    """Increase system volume"""
     for _ in range(5):
         pyautogui.press("volumeup")
-    speak("Volume increased")
-
 
 def volume_down():
-    """Decrease system volume"""
     for _ in range(5):
         pyautogui.press("volumedown")
-    speak("Volume decreased")
-
 
 def mute_volume():
-    """Mute system volume"""
     pyautogui.press("volumemute")
-    speak("Volume muted")
 
-
-# ==================== YOUTUBE CONTROLS ====================
-
-def yt_play_pause():
-    """Play or pause YouTube"""
-    pyautogui.press('k')
-    speak("Play or pause")
-
-
-def yt_next():
-    """Next YouTube video"""
-    pyautogui.hotkey('shift', 'n')
-    speak("Next video")
-
-
-def yt_previous():
-    """Previous YouTube video"""
-    pyautogui.hotkey('shift', 'p')
-    speak("Previous video")
-
-
-def yt_volume_up():
-    """Increase YouTube volume"""
-    pyautogui.press('up')
-    speak("Volume up")
-
-
-def yt_volume_down():
-    """Decrease YouTube volume"""
-    pyautogui.press('down')
-    speak("Volume down")
-
-
-def yt_mute():
-    """Mute YouTube"""
-    pyautogui.press('m')
-    speak("Muted")
-
-
-def yt_fullscreen():
-    """YouTube fullscreen"""
-    pyautogui.press('f')
-    speak("Full screen")
-
-
-def yt_exit_fullscreen():
-    """Exit YouTube fullscreen"""
-    pyautogui.press('esc')
-    speak("Exit full screen")
-
-
-def yt_forward():
-    """Forward YouTube video"""
-    pyautogui.press('l')
-    speak("Forward")
-
-
-def yt_backward():
-    """Backward YouTube video"""
-    pyautogui.press('j')
-    speak("Backward")
-
-
-# ==================== LANGUAGE & APP CONTROLS ====================
-
-def change_language():
-    """Change assistant language"""
-    speak("Which language would you like me to speak?")
-    lang = take_command()
-    
-    if "hindi" in lang:
-        engine.setProperty('voice', voices[1].id)
-        speak("अब मैं हिंदी में बात करूँगी।")
-    elif "english" in lang:
-        engine.setProperty('voice', voices[0].id)
-        speak("I will now speak in English.")
-    else:
-        speak("Sorry, language not supported.")
-
-
-def change_app():
-    """Switch between open applications"""
-    pyautogui.hotkey('alt', 'tab')
-    speak("Switched application")
-
-
-def close_app():
-    """Close current application"""
-    pyautogui.hotkey('alt', 'f4')
-    speak("Closed application")
-
-
-# ==================== ALARM FEATURE ====================
-
-def alarm(time_str):
-    """Set an alarm for specific time"""
-    speak(f"Alarm set for {time_str}")
-    while True:
-        if datetime.datetime.now().strftime("%H:%M") == time_str:
-            speak("Time to wake up!")
-            break
-        time.sleep(30)
-
-
-# ==================== MAIN EXECUTION ====================
-
-def main():
-    """Main function to run the assistant"""
-    print("\n" + "="*50)
-    print("🤖 NOVA AI - Personal Assistant")
-    print("="*50)
-    print("✅ All API keys loaded from .env file")
-    print("="*50 + "\n")
-    
-    speak("Hello, I am nova AI. How can I help you?")
-    
-    while True:
-        try:
-            query = take_command()
-            
-            if not query:
-                continue
-            
-            # Basic queries
-            if "time" in query:
-                tell_time()
-            elif "date" in query:
-                tell_date()
-            elif "how are you" in query:
-                speak("I am doing great, thank you for asking!")
-            
-            # Search and web
-            elif "search" in query:
-                search_google(query)
-            elif "website" in query:
-                url = query.replace("website", "").strip()
-                open_website(url)
-            
-            # Music and media
-            elif "play" in query:
-                play_song_on_youtube(query)
-            elif "stop" in query:
-                stop_song()
-            
-            # Information
-            elif "tell me about" in query:
-                tell_about(query)
-            elif "weather" in query:
-                get_weather()
-            elif "joke" in query:
-                tell_joke()
-            elif "news" in query:
-                tell_news()
-            
-            # System information
-            elif "ip address" in query:
-                get_ip()
-            elif "system info" in query:
-                system_info()
-            elif "cpu" in query:
-                cpu_stats()
-            elif "battery" in query:
-                battery_status()
-            elif "speed test" in query:
-                internet_speed()
-            
-            # Utilities
-            elif "screenshot" in query:
-                screenshot()
-            elif "write note" in query:
-                write_note()
-            elif "read note" in query:
-                read_note()
-            elif "camera" in query:
-                open_camera()
-            
-            # System controls
-            elif "shutdown" in query:
-                shutdown()
-            elif "restart" in query:
-                restart()
-            elif "lock" in query:
-                lock_system()
-            
-            # Volume and app controls
-            elif "volume up" in query and "youtube" not in query:
-                volume_up()
-            elif "volume down" in query and "youtube" not in query:
-                volume_down()
-            elif "mute" in query and "youtube" not in query:
-                mute_volume()
-            elif "change app" in query or "switch app" in query:
-                change_app()
-            elif "close app" in query:
-                close_app()
-            elif "language" in query:
-                change_language()
-            
-            # YouTube controls
-            elif "youtube play" in query or "youtube pause" in query:
-                yt_play_pause()
-            elif "youtube next" in query:
-                yt_next()
-            elif "youtube previous" in query:
-                yt_previous()
-            elif "volume up youtube" in query:
-                yt_volume_up()
-            elif "volume down youtube" in query:
-                yt_volume_down()
-            elif "mute youtube" in query:
-                yt_mute()
-            elif "full screen youtube" in query:
-                yt_fullscreen()
-            elif "exit full screen" in query:
-                yt_exit_fullscreen()
-            elif "forward youtube" in query:
-                yt_forward()
-            elif "backward youtube" in query:
-                yt_backward()
-            
-            # Exit
-            elif "exit" in query or "bye" in query or "goodbye" in query:
-                speak("Goodbye!")
-                break
-            
-            else:
-                speak("I didn't understand. Please try again.")
-        
-        except Exception as e:
-            print(f"Error: {e}")
-            speak("An error occurred. Please try again.")
-
-
+# ---------------- MAIN LOOP ----------------
 if __name__ == "__main__":
-    main() 
+    speak("Hello, I am Nova AI. How can I help you?")
+
+    while True:
+        query = take_command()
+
+        if "time" in query:
+            tell_time()
+
+        elif "date" in query:
+            tell_date()
+
+        elif "search" in query:
+            search_google(query.replace("search", ""))
+
+        elif "play" in query:
+            play_song(query.replace("play", ""))
+
+        elif "stop" in query:
+            stop_song()
+
+        elif "tell me about" in query:
+            tell_about(query.replace("tell me about", ""))
+
+        elif "weather" in query:
+            speak("Which city?")
+            city = take_command()
+            get_weather(city)
+
+        elif "joke" in query:
+            tell_joke()
+
+        elif "system info" in query:
+            system_info()
+
+        elif "cpu" in query:
+            cpu_stats()
+
+        elif "battery" in query:
+            battery_status()
+
+        elif "speed" in query:
+            internet_speed()
+
+        elif "screenshot" in query:
+            screenshot()
+
+        elif "shutdown" in query:
+            shutdown()
+
+        elif "restart" in query:
+            restart()
+
+        elif "lock" in query:
+            lock_system()
+
+        elif "volume up" in query:
+            volume_up()
+
+        elif "volume down" in query:
+            volume_down()
+
+        elif "mute" in query:
+            mute_volume()
+        elif "thank you" in query:
+            speak("You're welcome")
+        elif "exit" in query or "bye" in query:
+            speak("Goodbye")
+       
+            break
+
+        else:
+            speak("Please say again")
